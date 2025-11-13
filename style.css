@@ -1,85 +1,70 @@
-:root {
-  --bg-light: #ffffff;
-  --text-light: #000000;
-  --header-bg: #ffffff;
-  --gamebox-border-light: red;
-  --gamebox-border-dark: #ffffff;
-}
-
-/* basic layout */
-* { box-sizing: border-box; }
 body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: var(--bg-light);
-  color: var(--text-light);
-  transition: background-color .3s, color .3s;
-}
-
-.header {
+  background-color: #f5f5f5;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 12px 18px;
-  border-bottom: 1px solid #ddd;
-  background: var(--header-bg);
-}
-
-.header h1 {
+  justify-content: center;
+  height: 100vh;
+  font-family: Arial, sans-serif;
   margin: 0;
-  font-size: 20px;
 }
 
-.header-controls { display: flex; gap: 8px; align-items:center; }
+h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
 
-#themeToggle {
-  padding: 8px 12px;
-  border-radius: 6px;
+canvas {
+  background-color: #ffffff;
+  border: 2px solid #2c3e50;
+}
+
+#score {
+  color: #2c3e50;
+  font-size: 18px;
+  margin: 5px;
+}
+
+#controls {
+  display: none; /* Hidden on desktop */
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+}
+
+#controls button {
+  font-size: 24px;
+  margin: 5px;
+  padding: 10px;
   border: none;
+  border-radius: 8px;
+  background-color: #2c3e50;
+  color: white;
+}
+
+#controls div {
+  display: flex;
+  justify-content: center;
+}
+
+#restartBtn {
+  background-color: #27ae60;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
   cursor: pointer;
-  background: #ddd;
+  margin-top: 10px;
 }
 
-/* center game */
-#main {
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding: 20px;
+#restartBtn:hover {
+  background-color: #2ecc71;
 }
 
-#gameContainer {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background: var(--bg-light); /* white inside */
-  width: 420px;
-  height: 420px;
-  border: 4px solid var(--gamebox-border-light); /* red border */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+/* Show touch controls only on mobile */
+@media (max-width: 768px) {
+  #controls {
+    display: flex;
+  }
 }
-
-#gameCanvas {
-  background: transparent;
-  width: 400px;
-  height: 400px;
-  display:block;
-  touch-action: none;
-}
-
-/* Dark mode */
-.dark-mode {
-  --bg-light: #0b0b0b;
-  --text-light: #fff;
-  --header-bg: #111;
-  --gamebox-border-light: var(--gamebox-border-dark);
-}
-
-.dark-mode #gameContainer {
-  background: #000; /* black inside in dark mode */
-}
-
-.dark-mode #themeToggle {
-  background: #333;
-  color: #fff;
-                  }
