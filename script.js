@@ -1,144 +1,100 @@
-// Grab elements
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const themeToggle = document.getElementById('themeToggle');
-const gameContainer = document.getElementById('gameContainer');
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreEl = document.getElementById("score");
+const restartBtn = document.getElementById("restartBtn");
 
-const BOX = 20;
-const GRID_COLS = Math.floor(400 / BOX);
-const GRID_ROWS = Math.floor(400 / BOX);
+const box = 20;
+let snake, food, direction, score, gameSpeed, gameInterval;
 
-let snake = [{ x: 9 * BOX, y: 10 * BOX }];
-let direction = "RIGHT";
-let food = spawnFood();
-let gameInterval = null;
-let speed = 120;
+function initGame() {
+  snake = [{ x: 200, y: 200 }];
+  direction = "RIGHT";
+  score = 0;
+  gameSpeed = 150;
+  scoreEl.textContent = "Score: " + score;
+  food = {
+    x: Math.floor(Math.random() * (canvas.width / box)) * box,
+    y: Math.floor(Math.random() * (canvas.height / box)) * box
+  };
+  clearInterval(gameInterval);
+  gameInterval = setInterval(drawGame, gameSpeed);
+}
 
-canvas.width = 400;
-canvas.height = 400;
+document.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+  else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+  else if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+  else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+});
 
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw food
-  ctx.fillStyle = 'brown';
-  ctx.fillRect(food.x, food.y, BOX, BOX);
+  // draw food
+  ctx.fillStyle = "brown";
+  ctx.fillRect(food.x, food.y, box, box);
 
-  // Draw snake
-  for (let i = 0; i < snake.length; i++) {
-    ctx.fillStyle = 'gray';
-    ctx.fillRect(snake[i].x, snake[i].y, BOX, BOX);
-  }
+  // draw snake
+  ctx.fillStyle = "black";
+  snake.forEach(part => ctx.fillRect(part.x, part.y, box, box));
 
-  // compute new head
-  let headX = snake[0].x;
-  let headY = snake[0].y;
-  if (direction === 'LEFT') headX -= BOX;
-  if (direction === 'UP') headY -= BOX;
-  if (direction === 'RIGHT') headX += BOX;
-  if (direction === 'DOWN') headY += BOX;
+  // move snake
+  let head = { ...snake[0] };
+  if (direction === "UP") head.y -= box;
+  if (direction === "DOWN") head.y += box;
+  if (direction === "LEFT") head.x -= box;
+  if (direction === "RIGHT") head.x += box;
 
-  // Eat food?
-  if (headX === food.x && headY === food.y) {
-    food = spawnFood();
-  } else {
-    snake.pop();
-  }
-
-  const newHead = { x: headX, y: headY };
-
-  // Collisions
+  // check collision
   if (
-    headX < 0 ||
-    headY < 0 ||
-    headX >= canvas.width ||
-    headY >= canvas.height ||
-    collision(newHead, snake)
+    head.x < 0 ||
+    head.y < 0 ||
+    head.x >= canvas.width ||
+    head.y >= canvas.height ||
+    snake.some(seg => seg.x === head.x && seg.y === head.y)
   ) {
-    endGame();
+    clearInterval(gameInterval);
+    alert("💀 Game Over! Final Score: " + score);
     return;
   }
 
-  snake.unshift(newHead);
-}
+  snake.unshift(head);
 
-function collision(head, array) {
-  return array.some(seg => seg.x === head.x && seg.y === head.y);
-}
+  // eat food
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    scoreEl.textContent = "Score: " + score;
 
-function spawnFood() {
-  const fx = Math.floor(Math.random() * GRID_COLS) * BOX;
-  const fy = Math.floor(Math.random() * GRID_ROWS) * BOX;
-  for (let seg of snake) {
-    if (seg.x === fx && seg.y === fy) {
-      return spawnFood();
+    // speed up slightly
+    if (gameSpeed > 60) {
+      gameSpeed -= 5;
+      clearInterval(gameInterval);
+      gameInterval = setInterval(drawGame, gameSpeed);
     }
-  }
-  return { x: fx, y: fy };
-}
 
-function endGame() {
-  clearInterval(gameInterval);
-  gameInterval = null;
-  setTimeout(() => {
-    alert('Game Over!');
-    location.reload();
-  }, 50);
-}
-
-// Keyboard controls
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
-  if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
-  if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
-  if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
-});
-
-// Swipe controls
-let touchStartX = null;
-let touchStartY = null;
-
-canvas.addEventListener('touchstart', (e) => {
-  const t = e.changedTouches[0];
-  touchStartX = t.clientX;
-  touchStartY = t.clientY;
-}, { passive: true });
-
-canvas.addEventListener('touchend', (e) => {
-  if (touchStartX === null || touchStartY === null) return;
-  const t = e.changedTouches[0];
-  const dx = touchStartX - t.clientX;
-  const dy = touchStartY - t.clientY;
-  const absX = Math.abs(dx);
-  const absY = Math.abs(dy);
-  const threshold = 20;
-
-  if (Math.max(absX, absY) >= threshold) {
-    if (absX > absY) {
-      if (dx > 0 && direction !== 'RIGHT') direction = 'LEFT';
-      else if (dx < 0 && direction !== 'LEFT') direction = 'RIGHT';
-    } else {
-      if (dy > 0 && direction !== 'DOWN') direction = 'UP';
-      else if (dy < 0 && direction !== 'UP') direction = 'DOWN';
-    }
-  }
-
-  touchStartX = null;
-  touchStartY = null;
-}, { passive: true });
-
-// Theme toggle
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark-mode');
-  if (document.body.classList.contains('dark-mode')) {
-    themeToggle.textContent = '🌙 Dark';
+    // new food position
+    food.x = Math.floor(Math.random() * (canvas.width / box)) * box;
+    food.y = Math.floor(Math.random() * (canvas.height / box)) * box;
   } else {
-    themeToggle.textContent = '🌞 Light';
+    snake.pop();
   }
+}
+
+// Restart button
+restartBtn.addEventListener("click", initGame);
+
+// Mobile controls
+document.getElementById("up").addEventListener("click", () => {
+  if (direction !== "DOWN") direction = "UP";
+});
+document.getElementById("down").addEventListener("click", () => {
+  if (direction !== "UP") direction = "DOWN";
+});
+document.getElementById("left").addEventListener("click", () => {
+  if (direction !== "RIGHT") direction = "LEFT";
+});
+document.getElementById("right").addEventListener("click", () => {
+  if (direction !== "LEFT") direction = "RIGHT";
 });
 
-// start game
-if (!gameInterval) gameInterval = setInterval(drawGame, speed);
-
-// Prevent page scroll while swiping
-canvas.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive:false });
+initGame();
