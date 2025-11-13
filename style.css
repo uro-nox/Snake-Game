@@ -1,62 +1,85 @@
+:root {
+  --bg-light: #ffffff;
+  --text-light: #000000;
+  --header-bg: #ffffff;
+  --gamebox-border-light: red;
+  --gamebox-border-dark: #ffffff;
+}
+
+/* basic layout */
+* { box-sizing: border-box; }
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background-color: white;
   margin: 0;
-  padding: 0;
-  transition: background-color 0.5s, color 0.5s;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-light);
+  color: var(--text-light);
+  transition: background-color .3s, color .3s;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: white;
-  border-bottom: 2px solid #ccc;
+  padding: 12px 18px;
+  border-bottom: 1px solid #ddd;
+  background: var(--header-bg);
 }
 
-h1 {
+.header h1 {
   margin: 0;
-  color: black;
+  font-size: 20px;
 }
+
+.header-controls { display: flex; gap: 8px; align-items:center; }
 
 #themeToggle {
   padding: 8px 12px;
-  cursor: pointer;
-  border: none;
   border-radius: 6px;
-  background-color: #ddd;
+  border: none;
+  cursor: pointer;
+  background: #ddd;
+}
+
+/* center game */
+#main {
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding: 20px;
 }
 
 #gameContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: var(--bg-light); /* white inside */
+  width: 420px;
+  height: 420px;
+  border: 4px solid var(--gamebox-border-light); /* red border */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 #gameCanvas {
-  background-color: red;
-  border: 3px solid black;
+  background: transparent;
+  width: 400px;
+  height: 400px;
+  display:block;
+  touch-action: none;
 }
 
-/* Dark Mode Styles */
+/* Dark mode */
 .dark-mode {
-  background-color: #111;
-  color: white;
+  --bg-light: #0b0b0b;
+  --text-light: #fff;
+  --header-bg: #111;
+  --gamebox-border-light: var(--gamebox-border-dark);
 }
 
-.dark-mode .header {
-  background-color: #222;
-  border-bottom: 2px solid #444;
+.dark-mode #gameContainer {
+  background: #000; /* black inside in dark mode */
 }
 
 .dark-mode #themeToggle {
-  background-color: #333;
-  color: white;
-}
-
-.dark-mode #gameCanvas {
-  background-color: #000; /* red box becomes dark in dark mode */
-}
+  background: #333;
+  color: #fff;
+                  }
