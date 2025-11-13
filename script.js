@@ -1,51 +1,53 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const box = 20;
+// Grab elements
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const themeToggle = document.getElementById('themeToggle');
+const gameContainer = document.getElementById('gameContainer');
 
-let snake = [{ x: 9 * box, y: 10 * box }];
-let direction = null;
-let food = {
-  x: Math.floor(Math.random() * 19) * box,
-  y: Math.floor(Math.random() * 19) * box,
-};
-let gameInterval;
+const BOX = 20;
+const GRID_COLS = Math.floor(400 / BOX);
+const GRID_ROWS = Math.floor(400 / BOX);
 
-// Draw everything
+let snake = [{ x: 9 * BOX, y: 10 * BOX }];
+let direction = "RIGHT";
+let food = spawnFood();
+let gameInterval = null;
+let speed = 120;
+
+canvas.width = 400;
+canvas.height = 400;
+
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw food (brown)
-  ctx.fillStyle = "brown";
-  ctx.fillRect(food.x, food.y, box, box);
+  // Draw food
+  ctx.fillStyle = 'brown';
+  ctx.fillRect(food.x, food.y, BOX, BOX);
 
-  // Draw snake (gray)
+  // Draw snake
   for (let i = 0; i < snake.length; i++) {
-    ctx.fillStyle = "gray";
-    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(snake[i].x, snake[i].y, BOX, BOX);
   }
 
-  // Move snake
+  // compute new head
   let headX = snake[0].x;
   let headY = snake[0].y;
+  if (direction === 'LEFT') headX -= BOX;
+  if (direction === 'UP') headY -= BOX;
+  if (direction === 'RIGHT') headX += BOX;
+  if (direction === 'DOWN') headY += BOX;
 
-  if (direction === "LEFT") headX -= box;
-  if (direction === "UP") headY -= box;
-  if (direction === "RIGHT") headX += box;
-  if (direction === "DOWN") headY += box;
-
-  // Eat food
+  // Eat food?
   if (headX === food.x && headY === food.y) {
-    food = {
-      x: Math.floor(Math.random() * 19) * box,
-      y: Math.floor(Math.random() * 19) * box,
-    };
+    food = spawnFood();
   } else {
     snake.pop();
   }
 
   const newHead = { x: headX, y: headY };
 
-  // Collision detection
+  // Collisions
   if (
     headX < 0 ||
     headY < 0 ||
@@ -53,62 +55,90 @@ function drawGame() {
     headY >= canvas.height ||
     collision(newHead, snake)
   ) {
-    clearInterval(gameInterval);
-    alert("Game Over!");
+    endGame();
     return;
   }
 
   snake.unshift(newHead);
 }
 
-function collision(head, arr) {
-  return arr.some((segment) => segment.x === head.x && segment.y === head.y);
+function collision(head, array) {
+  return array.some(seg => seg.x === head.x && seg.y === head.y);
 }
 
-// Keyboard control
-document.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-  if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-  if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-  if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+function spawnFood() {
+  const fx = Math.floor(Math.random() * GRID_COLS) * BOX;
+  const fy = Math.floor(Math.random() * GRID_ROWS) * BOX;
+  for (let seg of snake) {
+    if (seg.x === fx && seg.y === fy) {
+      return spawnFood();
+    }
+  }
+  return { x: fx, y: fy };
+}
+
+function endGame() {
+  clearInterval(gameInterval);
+  gameInterval = null;
+  setTimeout(() => {
+    alert('Game Over!');
+    location.reload();
+  }, 50);
+}
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+  if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+  if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+  if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
 });
 
-// Swipe controls for mobile
-let startX, startY;
-canvas.addEventListener("touchstart", (e) => {
-  const touch = e.touches[0];
-  startX = touch.clientX;
-  startY = touch.clientY;
-});
+// Swipe controls
+let touchStartX = null;
+let touchStartY = null;
 
-canvas.addEventListener("touchmove", (e) => {
-  if (!startX || !startY) return;
-  const touch = e.touches[0];
-  const diffX = startX - touch.clientX;
-  const diffY = startY - touch.clientY;
+canvas.addEventListener('touchstart', (e) => {
+  const t = e.changedTouches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+}, { passive: true });
 
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    if (diffX > 0 && direction !== "RIGHT") direction = "LEFT";
-    else if (diffX < 0 && direction !== "LEFT") direction = "RIGHT";
-  } else {
-    if (diffY > 0 && direction !== "DOWN") direction = "UP";
-    else if (diffY < 0 && direction !== "UP") direction = "DOWN";
+canvas.addEventListener('touchend', (e) => {
+  if (touchStartX === null || touchStartY === null) return;
+  const t = e.changedTouches[0];
+  const dx = touchStartX - t.clientX;
+  const dy = touchStartY - t.clientY;
+  const absX = Math.abs(dx);
+  const absY = Math.abs(dy);
+  const threshold = 20;
+
+  if (Math.max(absX, absY) >= threshold) {
+    if (absX > absY) {
+      if (dx > 0 && direction !== 'RIGHT') direction = 'LEFT';
+      else if (dx < 0 && direction !== 'LEFT') direction = 'RIGHT';
+    } else {
+      if (dy > 0 && direction !== 'DOWN') direction = 'UP';
+      else if (dy < 0 && direction !== 'UP') direction = 'DOWN';
+    }
   }
 
-  startX = null;
-  startY = null;
-});
+  touchStartX = null;
+  touchStartY = null;
+}, { passive: true });
 
 // Theme toggle
-const themeToggle = document.getElementById("themeToggle");
-themeToggle.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  if (document.body.classList.contains("dark-mode")) {
-    themeToggle.textContent = "🌙 Dark";
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  if (document.body.classList.contains('dark-mode')) {
+    themeToggle.textContent = '🌙 Dark';
   } else {
-    themeToggle.textContent = "🌞 Light";
+    themeToggle.textContent = '🌞 Light';
   }
 });
 
-// Start game loop
-gameInterval = setInterval(drawGame, 120);
+// start game
+if (!gameInterval) gameInterval = setInterval(drawGame, speed);
+
+// Prevent page scroll while swiping
+canvas.addEventListener('touchmove', function(e){ e.preventDefault(); }, { passive:false });
