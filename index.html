@@ -4,23 +4,44 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>🐍 SNAKE GAME</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🐍 Snake Game</h1>
-  <p id="score">Score: 0</p>
-  <canvas id="gameCanvas" width="400" height="400"></canvas>
-  <div id="controls">
-    <button id="up">⬆️</button>
-    <div>
-      <button id="left">⬅️</button>
-      <button id="down">⬇️</button>
-      <button id="right">➡️</button>
+  <main class="game-shell">
+    <h1>🐍 Snake Game</h1>
+
+    <section class="hud">
+      <p id="score" class="stat">Score: <strong>0</strong></p>
+      <p id="bestScore" class="stat">Best: <strong>0</strong></p>
+      <p id="speed" class="stat">Speed: <strong>1x</strong></p>
+      <p id="status" class="status playing">Playing</p>
+    </section>
+
+    <div class="canvas-wrap">
+      <canvas id="gameCanvas" width="400" height="400"></canvas>
+      <div id="overlay" class="overlay hidden">
+        <p id="overlayText">Game Over</p>
+        <button id="overlayRestart" class="primary-btn">Play Again</button>
+      </div>
     </div>
-  </div>
-  <button id="restartBtn">🔄 Restart</button>
-  <p>Use Arrow Keys or Touch Buttons to Move</p>
+
+    <div class="action-row">
+      <button id="pauseBtn" class="secondary-btn">⏸️ Pause</button>
+      <button id="restartBtn" class="primary-btn">🔄 Restart</button>
+    </div>
+
+    <div id="controls">
+      <button id="up">⬆️</button>
+      <div>
+        <button id="left">⬅️</button>
+        <button id="down">⬇️</button>
+        <button id="right">➡️</button>
+      </div>
+    </div>
+
+    <p class="hint">Use Arrow Keys / Touch Buttons • Press Space to Pause</p>
+  </main>
 
   <script src="script.js"></script>
 </body>
